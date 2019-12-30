@@ -9,45 +9,6 @@ from .handlers import ServerHandler, \
     RegisterHandler, \
     APIKeyHandler
 
-DEFAULT_API_REVISION = 'v1'
-DEFAULT_BASEPATH = '/'
-DEFAULT_API_PATH = '/api/{}'
-
-
-class TornadoApplication(object):
-    def __init__(self):
-        # Server settings
-        self._port = '8080'
-        self._debug = False
-        self._assets_dir = os.path.join(os.path.dirname(__file__), 'assets')
-        self._static_dir = os.path.join(os.path.dirname(__file__), 'assets', 'static')
-        self._cookie_secret = ''
-        # Handler settings
-        self._basepath = '/'
-        self._apipath = '/api/v1/'
-        self._wspath = 'ws:0.0.0.0:{port}/'
-        self._sqlalchemy_sessionmaker = None
-        self._UserSQLClass = None
-        self._APIKeySQLClass = None
-        self._user_id_field = 'id'
-        self._apikey_id_field = 'id'
-        self._user_apikeys_field = 'apikeys'
-        self._apikey_user_field = 'user'
-        self._user_admin_field = 'admin'
-        self._user_admin_value = True
-        # extra
-        self._extra_handlers = None
-        self._extra_context = None
-        self._api_revision = 'v1'
-
-    @property
-    def port(self): return self._port
-
-    @port.setter
-    def port(self, value):
-        # update wspath if applicable
-        pass
-
 
 def make_application(
         # Server settings
