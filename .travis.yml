@@ -1,0 +1,38 @@
+dist: xenial
+language: python
+cache: pip
+
+matrix:
+  include:
+    - python: "3.7"
+      env: PYTHONVER=3
+
+addons:
+  apt:
+    update: true
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+  homebrew:
+    update: true
+    packages:
+      - python
+
+before_install:
+    - if [ "$TRAVIS_OS_NAME" = "osx" ]; then npm install -g yarn; fi
+
+install: 
+  - node --version
+  - yarn
+  - python3 -m pip install -e .[dev]
+
+script:
+  - make lint
+  - make tests
+
+branches:
+  only:
+  - master
+
+notifications:
+  email: false
