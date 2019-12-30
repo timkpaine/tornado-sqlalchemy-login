@@ -1,5 +1,5 @@
 from mock import MagicMock, patch
-from tornado_sqlalchemy_login.web import parse_body, construct_path, safe_get, safe_post, safe_post_cookies
+from tornado_sqlalchemy_login.utils import parse_body, construct_path, safe_get, safe_post, safe_post_cookies
 
 
 def foo(*args, **kwargs):

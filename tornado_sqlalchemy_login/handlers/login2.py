@@ -3,7 +3,7 @@ import tornado.web
 import tornado.escape
 import tornado.gen
 from tornado.concurrent import run_on_executor
-from .base import AuthenticatedHandler
+from .base2 import AuthenticatedHandler
 
 
 class LoginHandler(AuthenticatedHandler):
@@ -14,18 +14,18 @@ class LoginHandler(AuthenticatedHandler):
             self.redirect_home()
 
     def post(self):
-        if self.current_user:
-            return
+        # Get from current user
+        user = self.get_user()
         # Get from username/password
-        user = self.get_user_from_username_password()
-        if user:
-            return self.login(user)
-
+        if not user:
+            user = self.get_user_from_username_password()
         # get from apikey/secret
-        user = self.get_user_from_key()
+        if not user:
+            user = self.get_user_from_key()
         if user:
-            return self.login(user)
-
+            # return data in json
+            self.finish(self.login(user))
+            return
         # set 401
         self._set_401("User not recognized")
 
@@ -95,11 +95,7 @@ class APIKeyHandler(AuthenticatedHandler):
 
     @run_on_executor
     def _get(self):
-        with self.session() as session:
-            user = session.query(self.user_sql_class).filter_by(**{self.user_id_field: int(self.current_user)}).first()
-            if not user:
-                self._set_400("User malformed")
-            self.write({getattr(a, self.apikey_id_field): a.to_dict() for a in getattr(user, self.user_apikeys_field)})
+        self.write(self.get_apikeys_for_user(self.get_current_user()))
 
     @tornado.web.authenticated
     @tornado.gen.coroutine

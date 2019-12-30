@@ -1,7 +1,7 @@
 import tornado.gen
 from tornado.concurrent import run_on_executor
 from .base import ServerHandler
-from ..web import parse_body
+from ..utils import parse_body
 
 
 class LoginHandler(ServerHandler):

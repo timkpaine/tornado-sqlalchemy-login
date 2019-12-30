@@ -6,12 +6,19 @@ import tornado.web
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
-from ..web import parse_body
+from ..utils import parse_body
 
 
 class BaseHandler(tornado.web.RequestHandler):
     '''Just a default handler'''
     executor = ThreadPoolExecutor(16)
+
+    def initialize(self, **kwargs):
+        self.template_dirs = kwargs.pop("template_dirs", [os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets", "templates"))])
+        self.template = kwargs.pop("template", "index.html")
+        self.basepath = kwargs.pop("basepath", self.application.settings.get("login_manager")._options.basepath)
+        self.wspath = kwargs.pop("wspath", self.application.settings.get("login_manager")._options.wspath)
+        super(BaseHandler, self).initialize()
 
     def _set_and_raise(self, code, log_message, *args):
         logging.info(log_message, *args)
@@ -38,20 +45,16 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
     def redirect(self, path):
-        if path[:len(self.basepath)] == self.basepath:
+        basepath = self.application.settings.get("login_manager")._options.basepath
+        if path[:len(basepath)] == basepath:
             return super(BaseHandler, self).redirect(path)
-        return super(BaseHandler, self).redirect(self.basepath + path)
+        return super(BaseHandler, self).redirect(basepath + path)
 
     def render_template(self, template, **kwargs):
-        if hasattr(self, 'template_dirs'):
-            template_dirs = self.template_dirs
-        else:
-            template_dirs = [os.path.join(os.path.dirname(__file__), "..", "assets", "templates")]
-
+        template_dirs = self.template_dirs
         if self.settings.get('template_path', ''):
-            template_dirs.append(
-                self.settings["template_path"]
-            )
+            # insert at beginnging
+            template_dirs.insert(0, self.settings["template_path"])
         env = Environment(loader=FileSystemLoader(template_dirs))
 
         try:
@@ -70,7 +73,7 @@ class AuthenticatedHandler(BaseHandler):
     def get_current_user(self):
         cu = self.get_secure_cookie('user')
         if cu:
-            return self.application.settings.get("login_manager").get_user(cu.decode("utf8"))
+            return int(cu.decode("utf8"))
         return None
 
     def is_admin(self):
@@ -82,10 +85,17 @@ class AuthenticatedHandler(BaseHandler):
     def logout(self):
         return self.application.settings.get("login_manager").logout(self)
 
+    def get_user(self):
+        if self.current_user:
+            return self.application.settings.get("login_manager").get_user(self.current_user)
+        return None
+
     def get_user_from_username_password(self):
         body = parse_body(self.request)
-        username = self.get_argument('username', body.get('username', ''))
-        password = self.get_argument('password', body.get('password', ''))
+        username_field = self.application.settings.get("login_manager")._options.user_username_field
+        password_field = self.application.settings.get("login_manager")._options.user_password_field
+        username = self.get_argument(username_field, body.get(username_field, ''))
+        password = self.get_argument(password_field, body.get(password_field, ''))
         return self.application.settings.get("login_manager").get_user_from_username_password(username, password)
 
     def get_user_from_key(self):
@@ -93,6 +103,9 @@ class AuthenticatedHandler(BaseHandler):
         key = self.get_argument('key', body.get('key', ''))
         secret = self.get_argument('secret', body.get('secret', ''))
         return self.application.settings.get("login_manager").get_user_from_key(key, secret)
+
+    def get_apikeys_for_user(self, user):
+        return self.application.settings.get("login_manager").api_keys(user, self)
 
     def redirect_home(self):
         return self.redirect(self.application.settings.get("login_manager")._options.basepath)

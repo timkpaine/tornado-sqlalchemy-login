@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class SQLAlchemyLoginConfiguration:
+class SQLAlchemyLoginManagerOptions:
     basepath: str = "/"
     apipath: str = "/api/v1/"
     wspath: str = "ws:0.0.0.0:8080/api/v1/ws/"
@@ -14,19 +14,14 @@ class SQLAlchemyLoginConfiguration:
     login_html_path: str = "/login"
     logout_html_path: str = "/logout"
     register_html_path: str = "/register"
-    hostname: str = "localhost"
     port: str = "8080"
-    api_revision: str = "v1"
 
-
-@dataclass
-class SQLAlchemyLoginManagerOptions:
     UserClass: object = User
     APIKeyClass: object = APIKey
-    user_cookie_name = "user"
+    user_cookie_name: str = "user"
     user_id_field: str = "id"
     user_username_field: str = "username"
-    user_password_field: str = "username"
+    user_password_field: str = "password"
     apikey_id_field: str = "id"
     user_apikeys_field: str = "apikeys"
     apikey_user_field: str = "user"
@@ -50,11 +45,12 @@ class LoginManager(object):
     @contextmanager
     def session(self): yield
 
+    def get_user(self, id): return None
     def get_user_from_username_password(self, username, password): return None
     def get_user_from_key(self, key, secret): return None
 
 
-class SQLAlchemyLoginManager(object):
+class SQLAlchemyLoginManager(LoginManager):
     def __init__(self, sessionmaker, options):
         if not isinstance(options, SQLAlchemyLoginManagerOptions):
             raise Exception("options argument must be an instance of SQLAlchemyLoginManagerOptions. Got: {}".format(type(options)))
@@ -80,11 +76,15 @@ class SQLAlchemyLoginManager(object):
                 return True
         return False
 
+    def get_user(self, id):
+        with self.session() as session:
+            return session.query(self._options.UserClass).filter_by(**{self._options.user_id_field: id}).first()
+
     def get_user_from_username_password(self, username, password):
         if not username or not password:
             return None
         with self.session() as session:
-            user = session.query(self._options.user_sql_class).filter_by(**{self._options.user_username_field: username}).first()
+            user = session.query(self._options.UserClass).filter_by(**{self._options.user_username_field: username}).first()
             if user and (user or not password) and (getattr(user, self._options.user_password_field) == password):
                 return user
             return None
@@ -102,11 +102,19 @@ class SQLAlchemyLoginManager(object):
     def login(self, user, handler):
         if user and getattr(user, self._options.user_id_field):
             handler.set_secure_cookie(self._options.user_cookie_name, str(getattr(user, self._options.user_id_field)))
-            return {self._options.user_id_field: str(getattr(user, self.user_id_field)), self._options.user_username_field: getattr(user, self._options.user_username_field)}
-        return None
+            return {self._options.user_id_field: str(getattr(user, self._options.user_id_field)), self._options.user_username_field: getattr(user, self._options.user_username_field)}
+        return {}
 
     def logout(self, handler):
         handler.clear_cookie(self._options.user_cookie_name)
+        return {}
+
+    def api_keys(self, handler):
+        with self.session() as session:
+            user = session.query(self._options.UserClass).filter_by(**{self._options.user_id_field: int(handler.current_user)}).first()
+            if not user:
+                return {}
+            return {getattr(a, self._options.apikey_id_field): a.to_dict() for a in getattr(user, self._options.user_apikeys_field)}
 
 
 def login_required():

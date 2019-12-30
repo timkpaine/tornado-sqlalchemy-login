@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from ..sqla.models import User, APIKey
-from ..web import parse_body
+from ..utils import parse_body
 
 
 class ServerHandler(tornado.web.RequestHandler):
