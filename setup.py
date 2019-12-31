@@ -42,6 +42,7 @@ setup(
     version=version,
     description='Simple Python Utilities',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/timkpaine/tornado_sqlalchemy_login',
     author='Tim Paine',
     author_email='timothy.k.paine@gmail.com',
