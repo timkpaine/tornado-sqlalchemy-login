@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from .models import Base, User, APIKey
 
 
-def main(sql_url, application_name="TKP_UTILS", user_class=User, apikey_class=APIKey):
+def main(sql_url, application_name="tornado_sqlalchemy_login", user_class=User, apikey_class=APIKey):
     '''Create dummy notebook data for sqlalchemy'''
     engine = create_engine(sql_url, echo=False)
     Base.metadata.create_all(engine)
@@ -27,8 +27,8 @@ def main(sql_url, application_name="TKP_UTILS", user_class=User, apikey_class=AP
         print('added apikey: {}'.format(key))
         with open("keys.sh", "w") as fp:
             fp.write("#!/bin/bash\n")
-            fp.write("export TKP_UTILS={}\n".format(key.key))
-            fp.write("export TKP_UTILS={}\n".format(key.secret))
+            fp.write("export TORNADO_SQLALCHEMY_LOGIN_KEY={}\n".format(key.key))
+            fp.write("export TORNADO_SQLALCHEMY_LOGIN_SECRET={}\n".format(key.secret))
     except BaseException:
         session.rollback()
         admin = session.query(User).filter_by(username='test').first()
