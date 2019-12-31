@@ -1,6 +1,8 @@
-from .sqla.models import User, APIKey
+import ujson
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import List
+from .sqla.models import User, APIKey
 
 
 @dataclass
@@ -22,6 +24,7 @@ class SQLAlchemyLoginManagerOptions:
     user_id_field: str = "id"
     user_username_field: str = "username"
     user_password_field: str = "password"
+    user_extra_kwargs: List[str] = field(default_factory=lambda: ["email"])
     apikey_id_field: str = "id"
     user_apikeys_field: str = "apikeys"
     apikey_user_field: str = "user"
@@ -38,9 +41,11 @@ class _MockSession(object):
 
 class LoginManager(object):
     def __init__(self, options): pass
-    def login(self, handler): pass
+    def is_admin(self, handler): pass
+    def login(self, user, handler): pass
     def logout(self, handler): pass
     def register(self, handler): pass
+    def apikeys(self, handler): pass
 
     @contextmanager
     def session(self): yield
@@ -48,6 +53,9 @@ class LoginManager(object):
     def get_user(self, id): return None
     def get_user_from_username_password(self, username, password): return None
     def get_user_from_key(self, key, secret): return None
+
+    def new_apikey(self, handler): pass
+    def delete_apikey(self, handler, key_id): pass
 
 
 class SQLAlchemyLoginManager(LoginManager):
@@ -99,7 +107,7 @@ class SQLAlchemyLoginManager(LoginManager):
             user = getattr(apikey, self._options.apikey_user_field)
             return user
 
-    def login(self, user, handler):
+    def login(self, handler, user):
         if user and getattr(user, self._options.user_id_field):
             handler.set_secure_cookie(self._options.user_cookie_name, str(getattr(user, self._options.user_id_field)))
             return {self._options.user_id_field: str(getattr(user, self._options.user_id_field)), self._options.user_username_field: getattr(user, self._options.user_username_field)}
@@ -133,6 +141,14 @@ class SQLAlchemyLoginManager(LoginManager):
                 session.delete(key)
                 return key.to_dict()
             return {}
+
+    def register(self, handler, user_kwargs):
+        with self.session() as session:
+            new_user = self._options.UserClass(**user_kwargs)
+            session.add(new_user)
+            session.commit()
+            session.refresh(new_user)
+            return self.login(handler, new_user)
 
 
 def login_required():

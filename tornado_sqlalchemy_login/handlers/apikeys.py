@@ -8,21 +8,11 @@ from .base import AuthenticatedHandler
 
 class APIKeyHandler(AuthenticatedHandler):
     @tornado.web.authenticated
-    @tornado.gen.coroutine
     def get(self):
-        yield self._get()
-
-    @run_on_executor
-    def _get(self):
         self.write(self.apikeys())
 
     @tornado.web.authenticated
-    @tornado.gen.coroutine
     def post(self):
-        yield self._post()
-
-    @run_on_executor
-    def _post(self):
         user = self.get_user()
         if not user:
             self._set_400("User malformed")

@@ -83,7 +83,7 @@ class AuthenticatedHandler(BaseHandler):
         return self.application.settings.get("login_manager").apikeys(self)
 
     def login(self, user):
-        return self.application.settings.get("login_manager").login(user, self)
+        return self.application.settings.get("login_manager").login(self, user)
 
     def logout(self):
         return self.application.settings.get("login_manager").logout(self)
@@ -113,6 +113,20 @@ class AuthenticatedHandler(BaseHandler):
     def delete_apikey(self, key_id):
         return self.application.settings.get("login_manager").delete_apikey(self, key_id)
 
+    def register(self):
+        body = parse_body(self.request)
+        kwargs = {}
+        username_field = self.application.settings.get("login_manager")._options.user_username_field
+        password_field = self.application.settings.get("login_manager")._options.user_password_field
+        extra_fields = self.application.settings.get("login_manager")._options.user_extra_kwargs
+
+        kwargs[username_field] = self.get_argument(username_field, body.get(username_field, ''))
+        kwargs[password_field] = self.get_argument(password_field, body.get(password_field, ''))
+        for field in extra_fields:
+            kwargs[field] = self.get_argument(field, body.get(field, ''))
+
+        return self.application.settings.get("login_manager").register(self, kwargs)
+
     def redirect_home(self):
         return self.redirect(self.application.settings.get("login_manager")._options.basepath)
 
@@ -137,5 +151,4 @@ class AuthenticatedHandler(BaseHandler):
     @contextmanager
     def session(self):
         """Provide a transactional scope around a series of operations."""
-        for session in self.application.settings.get("login_manager").session():
-            yield session
+        yield self.application.settings.get("login_manager").session()
