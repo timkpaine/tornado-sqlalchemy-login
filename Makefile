@@ -18,6 +18,11 @@ clean: ## clean the repository
 	rm -rf .pytest_cache 
 	find . -name "*.pyc" | xargs rm -rf 
 	rm -rf .coverage cover htmlcov logs build dist *.egg-info
+	make -C ./docs clean
+
+docs:  ## make documentation
+	make -C ./docs html
+	open ./docs/_build/html/index.html
 
 build:  ## build the repository
 	python3 setup.py build
@@ -39,4 +44,4 @@ help:
 print-%:
 	@echo '$*=$($*)'
 
-.PHONY: clean tests help annotate annotate_l dist
+.PHONY: clean tests help annotate annotate_l dist docs
