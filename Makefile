@@ -8,7 +8,7 @@ annotate_l: ## MyPy type annotation check - count only
 	mypy -s tornado_sqlalchemy_login | wc -l 
 
 lint: ## run linter
-	python3 -m flake8 tornado_sqlalchemy_login
+	python3.7 -m flake8 tornado_sqlalchemy_login
 
 fix:  ## run autopep8/tslint fix
 	autopep8 --in-place -r -a -a tornado_sqlalchemy_login/
@@ -25,10 +25,10 @@ docs:  ## make documentation
 	open ./docs/_build/html/index.html
 
 build:  ## build the repository
-	python3 setup.py build
+	python3.7 setup.py build
 
 install:  ## install to site-packages
-	python3 -m pip install .
+	python3.7 -m pip install .
 
 dist:  ## dist to pypi
 	rm -rf dist build
