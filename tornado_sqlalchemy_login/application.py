@@ -1,4 +1,3 @@
-import ujson
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import List
