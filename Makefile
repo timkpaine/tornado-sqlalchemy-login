@@ -1,5 +1,5 @@
 tests: ## Clean and Make unit tests
-	python3 -m pytest -vvv tornado_sqlalchemy_login/tests/ --cov=tornado_sqlalchemy_login
+	python3.7 -m pytest -vvv tornado_sqlalchemy_login/tests/ --cov=tornado_sqlalchemy_login
 
 annotate: ## MyPy type annotation check
 	mypy -s tornado_sqlalchemy_login  
