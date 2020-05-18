@@ -23,6 +23,7 @@ with open(pjoin(here, 'README.md'), encoding='utf-8') as f:
 requires = [
     'jinja2>=2.10',
     'sqlalchemy>=1.3.0',
+    'requests>=2.22.0',
     'tornado>=6.0.3',
     'ujson>=1.35',
 ]
