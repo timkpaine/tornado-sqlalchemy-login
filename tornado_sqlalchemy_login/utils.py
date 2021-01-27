@@ -2,6 +2,7 @@ try:
     from urllib.parse import urljoin
 except ImportError:
     from urlparse import urljoin
+
     ConnectionRefusedError = OSError
 import logging
 import requests
@@ -24,7 +25,9 @@ def safe_get(path, data=None, cookies=None, proxies=None):
     except ConnectionRefusedError:
         return {}
     except ValueError:
-        logging.critical("route:{}\terror code: {}\t{}".format(path, resp.status_code, resp.text))
+        logging.critical(
+            "route:{}\terror code: {}\t{}".format(path, resp.status_code, resp.text)
+        )
         raise
 
 
@@ -35,7 +38,9 @@ def safe_post(path, data=None, cookies=None, proxies=None):
     except ConnectionRefusedError:
         return {}
     except ValueError:
-        logging.critical("route:{}\nerror code: {}\t{}".format(path, resp.status_code, resp.text))
+        logging.critical(
+            "route:{}\nerror code: {}\t{}".format(path, resp.status_code, resp.text)
+        )
         raise
 
 
@@ -46,7 +51,9 @@ def safe_post_cookies(path, data=None, cookies=None, proxies=None):
     except ConnectionRefusedError:
         return {}, None
     except ValueError:
-        logging.critical("route:{}\nerror code: {}\t{}".format(path, resp.status_code, resp.text))
+        logging.critical(
+            "route:{}\nerror code: {}\t{}".format(path, resp.status_code, resp.text)
+        )
         raise
 
 

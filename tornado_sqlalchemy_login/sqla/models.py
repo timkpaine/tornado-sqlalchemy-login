@@ -9,14 +9,14 @@ Base = declarative_base()
 
 
 class User(Base):
-    __tablename__ = 'users'
+    __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     username = Column(String(100), nullable=False, unique=True)
     password = Column(String(100), nullable=False)
 
     _email = Column("email", String, nullable=False, unique=True)
 
-    apikeys = relationship('APIKey', back_populates='user')
+    apikeys = relationship("APIKey", back_populates="user")
     admin = Column(Boolean, default=False)
 
     @hybrid_property
@@ -42,17 +42,23 @@ class User(Base):
 
 
 class APIKey(Base):
-    __tablename__ = 'apikeys'
+    __tablename__ = "apikeys"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete='cascade'))
-    user = relationship('User', back_populates='apikeys')
-    key = Column(String(100), nullable=False, default=lambda: secrets.token_urlsafe(TOKEN_WIDTH))
-    secret = Column(String(100), nullable=False, default=lambda: secrets.token_urlsafe(TOKEN_WIDTH))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="cascade"))
+    user = relationship("User", back_populates="apikeys")
+    key = Column(
+        String(100), nullable=False, default=lambda: secrets.token_urlsafe(TOKEN_WIDTH)
+    )
+    secret = Column(
+        String(100), nullable=False, default=lambda: secrets.token_urlsafe(TOKEN_WIDTH)
+    )
 
     @staticmethod
     def generateKey():
-        return {'key': secrets.token_urlsafe(TOKEN_WIDTH),
-                'secret': secrets.token_urlsafe(TOKEN_WIDTH)}
+        return {
+            "key": secrets.token_urlsafe(TOKEN_WIDTH),
+            "secret": secrets.token_urlsafe(TOKEN_WIDTH),
+        }
 
     def __repr__(self):
         return "<Key(id='{}', key='{}', secret='***')>".format(self.id, self.key)

@@ -1,17 +1,11 @@
 tests: ## Clean and Make unit tests
-	python3.7 -m pytest -vvv tornado_sqlalchemy_login/tests/ --cov=tornado_sqlalchemy_login --junitxml=python_junit.xml --cov-report=xml --cov-branch
-
-annotate: ## MyPy type annotation check
-	mypy -s tornado_sqlalchemy_login  
-
-annotate_l: ## MyPy type annotation check - count only
-	mypy -s tornado_sqlalchemy_login | wc -l 
+	python -m pytest -vvv tornado_sqlalchemy_login/tests/ --cov=tornado_sqlalchemy_login --junitxml=python_junit.xml --cov-report=xml --cov-branch
 
 lint: ## run linter
-	python3.7 -m flake8 tornado_sqlalchemy_login
+	python -m flake8 tornado_sqlalchemy_login setup.py
 
 fix:  ## run autopep8/tslint fix
-	autopep8 --in-place -r -a -a tornado_sqlalchemy_login/
+	black tornado_sqlalchemy_login/ setup.py
 
 clean: ## clean the repository
 	find . -name "__pycache__" | xargs  rm -rf
@@ -25,16 +19,18 @@ docs:  ## make documentation
 	open ./docs/_build/html/index.html
 
 build:  ## build the repository
-	python3.7 setup.py build
+	python setup.py build
 
 install:  ## install to site-packages
-	python3.7 -m pip install .
+	python -m pip install .
 
-dist:  ## dist to pypi
+dist:  ## create dists
 	rm -rf dist build
-	python3 setup.py sdist
-	python3 setup.py bdist_wheel
-	twine check dist/* && twine upload dist/*
+	python setup.py sdist bdist_wheel
+	python -m twine check dist/*
+	
+publish: dist  ## dist to pypi
+	python -m twine upload dist/* --skip-existing
 
 # Thanks to Francoise at marmelab.com for this
 .DEFAULT_GOAL := help

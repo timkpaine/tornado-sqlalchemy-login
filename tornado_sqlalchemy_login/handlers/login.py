@@ -4,7 +4,7 @@ from .base import AuthenticatedHandler
 class LoginHandler(AuthenticatedHandler):
     def get(self):
         if self.current_user:
-            self.redirect('api/v1/register')
+            self.redirect("api/v1/register")
         else:
             self.redirect_home()
 

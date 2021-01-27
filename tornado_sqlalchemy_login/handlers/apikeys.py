@@ -14,7 +14,11 @@ class APIKeyHandler(AuthenticatedHandler):
         user = self.get_user()
         if not user:
             self._set_400("User malformed")
-        ret = self.delete_apikey(self.get_argument("id")) if self.get_argument("id", "") else self.new_apikey()
+        ret = (
+            self.delete_apikey(self.get_argument("id"))
+            if self.get_argument("id", "")
+            else self.new_apikey()
+        )
         if ret:
             self.finish(ret)
         else:

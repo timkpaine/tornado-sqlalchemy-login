@@ -32,35 +32,66 @@ class SQLAlchemyLoginManagerOptions:
 
 
 class _MockSession(object):
-    def commit(self, *args, **kwargs): pass
-    def add(self, *args, **kwargs): pass
-    def refresh(self, *args, **kwargs): pass
-    def rollback(self, *args, **kwargs): pass
+    def commit(self, *args, **kwargs):
+        pass
+
+    def add(self, *args, **kwargs):
+        pass
+
+    def refresh(self, *args, **kwargs):
+        pass
+
+    def rollback(self, *args, **kwargs):
+        pass
 
 
 class LoginManager(object):
-    def __init__(self, options): pass
-    def is_admin(self, handler): pass
-    def login(self, user, handler): pass
-    def logout(self, handler): pass
-    def register(self, handler): pass
-    def apikeys(self, handler): pass
+    def __init__(self, options):
+        pass
+
+    def is_admin(self, handler):
+        pass
+
+    def login(self, user, handler):
+        pass
+
+    def logout(self, handler):
+        pass
+
+    def register(self, handler):
+        pass
+
+    def apikeys(self, handler):
+        pass
 
     @contextmanager
-    def session(self): yield
+    def session(self):
+        yield
 
-    def get_user(self, id): return None
-    def get_user_from_username_password(self, username, password): return None
-    def get_user_from_key(self, key, secret): return None
+    def get_user(self, id):
+        return None
 
-    def new_apikey(self, handler): pass
-    def delete_apikey(self, handler, key_id): pass
+    def get_user_from_username_password(self, username, password):
+        return None
+
+    def get_user_from_key(self, key, secret):
+        return None
+
+    def new_apikey(self, handler):
+        pass
+
+    def delete_apikey(self, handler, key_id):
+        pass
 
 
 class SQLAlchemyLoginManager(LoginManager):
     def __init__(self, sessionmaker, options):
         if not isinstance(options, SQLAlchemyLoginManagerOptions):
-            raise Exception("options argument must be an instance of SQLAlchemyLoginManagerOptions. Got: {}".format(type(options)))
+            raise Exception(
+                "options argument must be an instance of SQLAlchemyLoginManagerOptions. Got: {}".format(
+                    type(options)
+                )
+            )
         self._sessionmaker = sessionmaker
         self._options = options
 
@@ -78,21 +109,41 @@ class SQLAlchemyLoginManager(LoginManager):
 
     def is_admin(self, handler):
         with self.session() as session:
-            user = session.query(self._options.UserClass).filter_by(**{self._options.user_id_field: handler.current_user}).first()
-            if user and getattr(user, self._options.user_admin_field) == self._options.user_admin_value:
+            user = (
+                session.query(self._options.UserClass)
+                .filter_by(**{self._options.user_id_field: handler.current_user})
+                .first()
+            )
+            if (
+                user
+                and getattr(user, self._options.user_admin_field)
+                == self._options.user_admin_value
+            ):
                 return True
         return False
 
     def get_user(self, id):
         with self.session() as session:
-            return session.query(self._options.UserClass).filter_by(**{self._options.user_id_field: id}).first()
+            return (
+                session.query(self._options.UserClass)
+                .filter_by(**{self._options.user_id_field: id})
+                .first()
+            )
 
     def get_user_from_username_password(self, username, password):
         if not username or not password:
             return None
         with self.session() as session:
-            user = session.query(self._options.UserClass).filter_by(**{self._options.user_username_field: username}).first()
-            if user and (user or not password) and (getattr(user, self._options.user_password_field) == password):
+            user = (
+                session.query(self._options.UserClass)
+                .filter_by(**{self._options.user_username_field: username})
+                .first()
+            )
+            if (
+                user
+                and (user or not password)
+                and (getattr(user, self._options.user_password_field) == password)
+            ):
                 return user
             return None
 
@@ -108,8 +159,18 @@ class SQLAlchemyLoginManager(LoginManager):
 
     def login(self, handler, user):
         if user and getattr(user, self._options.user_id_field):
-            handler.set_secure_cookie(self._options.user_cookie_name, str(getattr(user, self._options.user_id_field)))
-            return {self._options.user_id_field: str(getattr(user, self._options.user_id_field)), self._options.user_username_field: getattr(user, self._options.user_username_field)}
+            handler.set_secure_cookie(
+                self._options.user_cookie_name,
+                str(getattr(user, self._options.user_id_field)),
+            )
+            return {
+                self._options.user_id_field: str(
+                    getattr(user, self._options.user_id_field)
+                ),
+                self._options.user_username_field: getattr(
+                    user, self._options.user_username_field
+                ),
+            }
         return {}
 
     def logout(self, handler):
@@ -118,24 +179,47 @@ class SQLAlchemyLoginManager(LoginManager):
 
     def apikeys(self, handler):
         with self.session() as session:
-            user = session.query(self._options.UserClass).filter_by(**{self._options.user_id_field: int(handler.current_user)}).first()
+            user = (
+                session.query(self._options.UserClass)
+                .filter_by(**{self._options.user_id_field: int(handler.current_user)})
+                .first()
+            )
             if not user:
                 return {}
-            return {str(getattr(a, self._options.apikey_id_field)): a.to_dict() for a in getattr(user, self._options.user_apikeys_field)}
+            return {
+                str(getattr(a, self._options.apikey_id_field)): a.to_dict()
+                for a in getattr(user, self._options.user_apikeys_field)
+            }
 
     def new_apikey(self, handler):
         with self.session() as session:
-            user = session.query(self._options.UserClass).filter_by(**{self._options.user_id_field: handler.current_user}).first()
+            user = (
+                session.query(self._options.UserClass)
+                .filter_by(**{self._options.user_id_field: handler.current_user})
+                .first()
+            )
             # new key
-            apikey = self._options.APIKeyClass(**{self._options.apikey_user_field: user})
+            apikey = self._options.APIKeyClass(
+                **{self._options.apikey_user_field: user}
+            )
             session.add(apikey)
             return apikey.to_dict()
 
     def delete_apikey(self, handler, key_id):
         with self.session() as session:
             # delete key
-            user = session.query(self._options.UserClass).filter_by(**{self._options.user_id_field: handler.current_user}).first()
-            key = session.query(self._options.APIKeyClass).filter_by(**{self._options.apikey_id_field: int(handler.get_argument("id"))}).first()
+            user = (
+                session.query(self._options.UserClass)
+                .filter_by(**{self._options.user_id_field: handler.current_user})
+                .first()
+            )
+            key = (
+                session.query(self._options.APIKeyClass)
+                .filter_by(
+                    **{self._options.apikey_id_field: int(handler.get_argument("id"))}
+                )
+                .first()
+            )
             if getattr(key, self._options.apikey_user_field) == user:
                 session.delete(key)
                 return key.to_dict()
@@ -154,5 +238,7 @@ def login_required():
     def _wrapper(meth):
         def _wrapper2(self):
             pass
+
         return _wrapper2
+
     return _wrapper
