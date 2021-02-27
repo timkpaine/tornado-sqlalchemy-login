@@ -49,7 +49,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/timkpaine/tornado_sqlalchemy_login",
     author="Tim Paine",
-    author_email="timothy.k.paine@gmail.com",
+    author_email="t.paine154@gmail.com",
     license="Apache 2.0",
     classifiers=[
         "Development Status :: 3 - Alpha",
