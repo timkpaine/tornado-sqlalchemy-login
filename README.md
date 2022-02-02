@@ -5,5 +5,4 @@ SQLAlchemy helpers doing login/logout/register in Tornado
 [![Coverage](https://codecov.io/gh/timkpaine/tornado_sqlalchemy_login/branch/main/graph/badge.svg)](https://codecov.io/gh/timkpaine/tornado_sqlalchemy_login)
 [![License](https://img.shields.io/github/license/timkpaine/tornado-sqlalchemy-login.svg)](https://pypi.python.org/pypi/tornado-sqlalchemy-login/)
 [![PyPI](https://img.shields.io/pypi/v/tornado-sqlalchemy-login.svg)](https://pypi.python.org/pypi/tornado-sqlalchemy-login/)
-[![Docs](https://readthedocs.org/projects/tornado-sqlalchemy-login/badge/?version=latest)](https://tornado-sqlalchemy-login.readthedocs.io/en/latest/?badge=latest)
 
